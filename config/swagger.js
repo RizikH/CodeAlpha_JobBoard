@@ -1,0 +1,22 @@
+const swaggerJSDoc = require('swagger-jsdoc');
+
+// Swagger definition
+const swaggerDefinition = {
+    openapi: '3.0.0',
+    info: {
+        title: 'JobBoard API',
+        version: '1.0.0',
+        description: 'API documentation for CodeAlpha JobBoard',
+    }
+};
+
+// Options for swagger-jsdoc
+const options = {
+    definition: swaggerDefinition,
+    apis: ['./routes/*.js'],
+};
+
+// Initialize swagger-jsdoc
+const swaggerSpec = swaggerJSDoc(options);
+
+module.exports = swaggerSpec;
