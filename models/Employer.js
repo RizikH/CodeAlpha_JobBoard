@@ -1,16 +1,12 @@
 const mongoose = require('mongoose');
 
 const employerSchema = new mongoose.Schema({
-    name: {
-        type: String,
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         required: true
     },
-    email: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    password: {
+    name: {
         type: String,
         required: true
     },
@@ -32,4 +28,4 @@ const employerSchema = new mongoose.Schema({
 
 const Employer = mongoose.model('Employer', employerSchema);
 
-module.exports = Employer;
+module.exports = Employer;  
