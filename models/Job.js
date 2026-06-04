@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { JOB_TYPE, JOB_STATUS } = require('../utils/constants');
 
 const JobSchema = new mongoose.Schema({
     title: { type: String, required: true },
@@ -12,13 +13,13 @@ const JobSchema = new mongoose.Schema({
     location: { type: String, required: true },
     jobType: {
         type: String,
-        enum: ['full-time', 'part-time', 'contract', 'internship'],
+        enum: Object.values(JOB_TYPE),
         required: true
     },
     salary: { type: Number },
     status: {
         type: String,
-        enum: ['accepting', 'filled', 'canceled'],
+        enum: Object.values(JOB_STATUS),
         default: 'accepting',
         required: true
     }

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { APPLICATION_STATUS } = require('../utils/constants');
 
 const ApplicationSchema = new mongoose.Schema({
     candidate: {
@@ -13,7 +14,7 @@ const ApplicationSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['processing', 'accepted', 'declined', 'withdrawn'],
+        enum: Object.values(APPLICATION_STATUS),
         default: 'processing',
         required: true
     }

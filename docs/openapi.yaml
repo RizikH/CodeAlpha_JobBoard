@@ -1,0 +1,298 @@
+openapi: 3.0.3
+info:
+  title: CodeAlpha JobBoard
+  version: 1.0.0
+
+servers:
+  - url: /api
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+
+    # ── Shared response envelopes ──────────────────────────────────────────────
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+
+    # ── Domain models ──────────────────────────────────────────────────────────
+
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: MongoDB ObjectId
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [employer, candidate, admin]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Candidate:
+      type: object
+      properties:
+        _id:
+          type: string
+        user:
+          type: string
+          description: ObjectId ref to User
+        name:
+          type: string
+        phone:
+          type: string
+        resume:
+          type: array
+          items:
+            type: string
+            description: ObjectId ref to Resume
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Employer:
+      type: object
+      properties:
+        _id:
+          type: string
+        user:
+          type: string
+          description: ObjectId ref to User
+        name:
+          type: string
+        company:
+          type: string
+        location:
+          type: string
+        phone:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Job:
+      type: object
+      properties:
+        _id:
+          type: string
+        title:
+          type: string
+        employer:
+          type: string
+          description: ObjectId ref to Employer
+        description:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+        location:
+          type: string
+        jobType:
+          type: string
+          enum: [full-time, part-time, contract, internship]
+        salary:
+          type: number
+        status:
+          type: string
+          enum: [accepting, filled, canceled]
+          default: accepting
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Application:
+      type: object
+      properties:
+        _id:
+          type: string
+        candidate:
+          type: string
+          description: ObjectId ref to Candidate
+        job:
+          type: string
+          description: ObjectId ref to Job
+        status:
+          type: string
+          enum: [processing, accepted, declined, withdrawn]
+          default: processing
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Resume:
+      type: object
+      properties:
+        _id:
+          type: string
+        fileName:
+          type: string
+        filePath:
+          type: string
+        user:
+          type: string
+          description: ObjectId ref to Candidate
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+# ── Paths ──────────────────────────────────────────────────────────────────────
+
+paths:
+
+  /auth/register:
+    post:
+      tags: [auth]
+      summary: Register a new user and return a signed JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password, phone, role]
+              properties:
+                name:
+                  type: string
+                  example: Jane Doe
+                email:
+                  type: string
+                  format: email
+                  example: jane@example.com
+                password:
+                  type: string
+                  description: >
+                    Min 8 characters; must contain at least one uppercase letter,
+                    one lowercase letter, and one special character (!@#$%^&*).
+                  example: "Secret@1"
+                phone:
+                  type: string
+                  description: "Format: +[country code] [number]"
+                  example: "+1 1234567890"
+                company:
+                  type: string
+                  description: Required when role is employer.
+                location:
+                  type: string
+                  description: Required when role is employer.
+                role:
+                  type: string
+                  enum: [employer, candidate, admin]
+      responses:
+        '201':
+          description: Registration successful — returns a JWT token
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          data:
+                            type: string
+                            description: Signed JWT
+        '400':
+          description: Request body failed Joi validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Authenticate a user and return a signed JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: jane@example.com
+                password:
+                  type: string
+                  example: "Secret@1"
+      responses:
+        '200':
+          description: Login successful — returns a JWT token
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          data:
+                            type: string
+                            description: Signed JWT
+        '400':
+          description: Request body failed Joi validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: User not found or incorrect password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
