@@ -1,11 +1,13 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const response = require('../utils/response');
 
 const protect = async (req, res, next) => {
     const authHeaders = req.headers.authorization;
 
     if (!authHeaders || !authHeaders.startsWith('Bearer')) {
-        return res.status(401).json({ message: 'Not authorized' });
+        return response.error(res, 'Not authorized', 401);
+
     }
 
     const authToken = authHeaders.split(' ')[1];
@@ -15,13 +17,14 @@ const protect = async (req, res, next) => {
 
         const user = await User.findById(decodedToken.id).select('-password');
         if (!user) {
-            return res.status(401).json({ message: 'Not authorized' });
+            return response.error(res, 'Not authorized', 401);
+
         }
         req.user = user;
 
         next();
-    } catch (error) {
-        return res.status(401).json({ message: 'Not authorized' });
+    } catch (err) {
+        return response.error(res, 'Not authorized', 401);
     }
 }
 
