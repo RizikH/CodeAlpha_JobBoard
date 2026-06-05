@@ -1,49 +1,77 @@
 # Generate OpenAPI Documentation
 
-Generate an OpenAPI 3.0 spec from this project's Express routes.
+Generate an OpenAPI 3.0 spec from this project's Express routes and write it to the file Swagger UI is configured to load.
 
 ## Arguments
 
 `$ARGUMENTS` may contain:
-- An output file path (e.g. `openapi.yaml` or `docs/openapi.json`). Defaults to `openapi.yaml` at the project root.
+- An output file path (e.g. `docs/openapi.yaml`). If omitted, detect from the swagger config (see Step 1).
 - A routes directory (e.g. `routes/`). Defaults to `routes/`.
-
-Parse `$ARGUMENTS` for these values before starting. If ambiguous, prefer `.yaml` output.
 
 ## Steps
 
-### 1 — Discover route files
-Use Glob to find all `*.js` files under the routes directory. Also read `app.js` (or `server.js` / `index.js` if `app.js` is absent) to find the base path prefix each router is mounted on (e.g. `app.use('/api/auth', authRouter)` → prefix `/api/auth`).
+### 1 — Find the swagger config and determine the output path
 
-### 2 — Extract routes
-For each route file, read it and extract every route registration:
+Read `config/swagger.js` (or `swagger.js` / `config/swagger.ts` if absent). Look for the `apis` array inside the `swagger-jsdoc` options — that array contains the file(s) swagger-jsdoc reads. Use the first `.yaml` or `.json` entry as the output path. If the swagger config cannot be found or has no `apis` entry pointing to a YAML/JSON file, default to `docs/openapi.yaml`.
+
+### 2 — Read app.js to find mount prefixes
+
+Read `app.js` (or `server.js` / `index.js` if absent). For every `app.use(path, router)` call, record the mount path (e.g. `'/api/auth'`, `'/api/job'`).
+
+Find the **common prefix** shared by all mount paths (e.g. if all start with `/api`, the common prefix is `/api`). This becomes `servers[0].url`.
+
+For each router, the **spec path prefix** is the mount path **with the common prefix stripped** (e.g. mount `'/api/auth'` with common prefix `/api` → spec prefix `/auth`).
+
+### 3 — Read route files
+
+Glob for all `*.js` files under the routes directory. For each file, read it and extract every route registration:
 - HTTP method (`get`, `post`, `put`, `patch`, `delete`)
-- Path pattern (combine mount prefix + route path, convert Express params `:id` → `{id}`)
-- Any named middleware applied at the route or router level (e.g. `protect`, `authorize`, `rateLimiter`)
+- Full spec path = spec prefix from Step 2 + route path, with Express params converted (`:id` → `{id}`)
+- Middleware applied at the route level or via `router.use(...)` — note any `protect`, `authorize`, `authorizeRole` calls
 
-### 3 — Read controllers
-For each route, locate its controller file (follow the `require(...)` path in the route file) and read the handler function. From the handler infer:
-- **Request shape**: what fields are read from `req.body`, `req.params`, `req.query`
-- **Response shape**: what is passed to `res.json(...)` or the response utility on success
-- **Auth**: whether `protect` / `authorize` middleware is present → mark as `bearerAuth` secured
+### 4 — Read controllers
 
-### 4 — Read models
-Glob for `models/*.js` and read each one. Use Mongoose schema field definitions to build OpenAPI `components/schemas` entries. Map Mongoose types: `String→string`, `Number→number`, `Boolean→boolean`, `Date→string (format: date-time)`, `ObjectId ref→string (description: ObjectId ref to X)`.
+For each route, follow the `require(...)` path in the route file to find the controller. Read the handler function and extract:
+- **`req.body` fields**: what is destructured or accessed from `req.body`
+- **`req.params` fields**: any `req.params.X` accesses
+- **`req.query` fields**: any `req.query.X` accesses
+- **Response shape**: what is passed to `res.json(...)` or the response utility (e.g. `response.success(res, data, 201)`)
+- **Auth**: whether `protect` middleware wraps this route → mark operation as `bearerAuth` secured
 
-### 5 — Read validators (if present)
-If a `utils/validators.js` or similar exists, read it. Use any exported validator schemas to enrich request body descriptions.
+### 5 — Read validators
 
-### 6 — Assemble the spec
-Build a valid OpenAPI 3.0.3 document:
+Glob broadly for validator files:
+- `utils/validators.js`
+- `utils/validators/index.js`
+- `utils/validators/**/*.js`
+- `validators/**/*.js`
 
-```
+Read every match. Use the Joi (or similar) schema field definitions to enrich request body `description`, `required`, and `enum` values. Map Joi types: `Joi.string()→string`, `Joi.number()→number`, `Joi.boolean()→boolean`, `Joi.array()→array`, `.valid(...values)→enum`, `.required()→required field`.
+
+### 6 — Read models
+
+Glob for `models/*.js` and read each one. Build `components/schemas` entries from Mongoose schema definitions. Type mapping:
+- `String` → `string`
+- `Number` → `number`
+- `Boolean` → `boolean`
+- `Date` → `string, format: date-time`
+- `mongoose.Schema.Types.ObjectId` (or `ref: 'X'`) → `string, description: "ObjectId ref to X"`
+- `[{ type: ... }]` array field → `array` with appropriate `items`
+
+Also include `SuccessResponse` and `ErrorResponse` schemas derived from the response utility shape (read `utils/response.js` if present).
+
+### 7 — Assemble the spec
+
+Build a valid OpenAPI 3.0.3 YAML document with this structure:
+
+```yaml
 openapi: 3.0.3
 info:
-  title: <derive from package.json "name" field, title-cased>
-  version: <derive from package.json "version">
-  description: <derive from package.json "description" if present>
+  title: <package.json "name", title-cased>
+  version: <package.json "version">
+  description: <package.json "description" if non-empty>
 servers:
-  - url: /api   (or the common prefix you found in app.js)
+  - url: <common prefix from Step 2, e.g. /api>
 components:
   securitySchemes:
     bearerAuth:
@@ -51,24 +79,32 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
-    <one entry per model>
+    <one entry per model, plus SuccessResponse and ErrorResponse>
 paths:
-  <one entry per unique path, grouped by path then method>
+  <one entry per unique spec path>
 ```
 
+**Path rules (critical):**
+- Paths must be relative to `servers[0].url`. Never include the common prefix in path keys.
+  - Correct: `servers.url: /api` + path key `/auth/register`
+  - Wrong:   `servers.url: /api` + path key `/api/auth/register`
+- List `/resource/mine` (or any static segment) **before** `/resource/{id}` so Express-style static routes are not shadowed by the param route in the docs.
+
 For each operation include:
-- `summary`: short human-readable label derived from the handler name or route
-- `tags`: the router filename without extension (e.g. `auth`)
-- `security`: `[{bearerAuth: []}]` when the route uses `protect` middleware, omit otherwise
-- `requestBody`: only for POST / PUT / PATCH — list body fields with their types
-- `parameters`: path params and any notable query params
-- `responses`: at minimum a `200` success and a `400`/`401`/`404` where applicable
+- `summary`: short label derived from the handler name or route purpose
+- `tags`: the route filename without extension (e.g. `auth`, `job`)
+- `security`: `[{bearerAuth: []}]` when the route uses `protect` middleware; omit otherwise
+- `requestBody`: for POST / PUT / PATCH — include all body fields with types and `required` list from the validator
+- `parameters`: path params (`in: path`) and query params (`in: query`) from the controller
+- `responses`: at minimum a success response (`200` or `201`) and error responses (`400`, `401`, `404`) where applicable; reference `$ref: '#/components/schemas/SuccessResponse'` and `$ref: '#/components/schemas/ErrorResponse'`
 
-### 7 — Write the output file
-Write the assembled YAML (or JSON if the output path ends in `.json`) to the output path determined in step 1.
+### 8 — Write the output file
 
-### 8 — Report
+Write the assembled YAML to the output path determined in Step 1.
+
+### 9 — Report
+
 Tell the user:
-- The output file path
+- The output file path written
 - How many paths were documented
 - Any routes skipped because the controller or handler could not be resolved

@@ -18,7 +18,8 @@ const PORT = process.env.PORT || 5000;
 connectDB();
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-app.use('/auth', require('./routes/auth'));
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/job', require('./routes/job'));
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
