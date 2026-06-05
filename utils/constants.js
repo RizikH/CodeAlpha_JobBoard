@@ -22,7 +22,8 @@ const JOB_TYPE = {
 const JOB_STATUS = {
     ACCEPTING: 'accepting',
     FILLED: 'filled',
-    CANCELED: 'canceled'
+    CANCELED: 'canceled',
+    DELETED: 'deleted'
 }
 
 module.exports = {

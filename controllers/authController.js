@@ -6,7 +6,7 @@ const { validateRegister, validateLogin } = require('../utils/validators');
 const register = async (req, res) => {
     const { name, email, password, phone, company, location, role } = req.body;
     const { error, value } = validateRegister.validate(
-      { name, email, password, phone, company, location, role }
+        { name, email, password, phone, company, location, role }
     );
 
     if (error) {
@@ -18,7 +18,7 @@ const register = async (req, res) => {
 
         return response.success(res, { token: data }, 201);
     } catch (err) {
-        return response.error(res, err.message, 401);
+        return response.error(res, err.message, 400);
     }
 };
 

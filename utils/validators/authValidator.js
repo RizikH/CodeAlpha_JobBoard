@@ -2,7 +2,7 @@
 
 const Joi = require('joi');
 
-const { ROLES } = require('../utils/constants');
+const { ROLES } = require('../constants');
 
 // Validates full registration payload: name, email, password strength, phone, company, location, and role
 const validateRegister = Joi.object({
