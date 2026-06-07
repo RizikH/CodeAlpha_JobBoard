@@ -7,7 +7,8 @@ const swaggerDefinition = {
         title: 'JobBoard API',
         version: '1.0.0',
         description: 'API documentation for CodeAlpha JobBoard',
-    }
+    },
+    servers: [{ url: '/api' }]
 };
 
 // Options for swagger-jsdoc

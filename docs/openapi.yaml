@@ -128,7 +128,7 @@ components:
           type: number
         status:
           type: string
-          enum: [accepting, filled, canceled]
+          enum: [accepting, filled, canceled, deleted]
           default: accepting
         createdAt:
           type: string
@@ -148,6 +148,9 @@ components:
         job:
           type: string
           description: ObjectId ref to Job
+        resume:
+          type: string
+          description: ObjectId ref to Resume (optional)
         status:
           type: string
           enum: [processing, accepted, declined, withdrawn]
@@ -237,13 +240,7 @@ paths:
                             type: string
                             description: Signed JWT
         '400':
-          description: Request body failed Joi validation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          description: User already exists
+          description: Validation error or user already exists
           content:
             application/json:
               schema:
@@ -296,10 +293,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-
-  /job:
+        '409':
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /jobs:
     get:
-      tags: [job]
+      tags: [jobs]
       summary: Get all job listings (with optional filters)
       parameters:
         - name: location
@@ -343,7 +345,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
     post:
-      tags: [job]
+      tags: [jobs]
       summary: Create a new job listing (employer only)
       security:
         - bearerAuth: []
@@ -399,9 +401,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /job/mine:
+  /jobs/mine:
     get:
-      tags: [job]
+      tags: [jobs]
       summary: Get all job listings posted by the authenticated employer
       security:
         - bearerAuth: []
@@ -432,9 +434,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /job/{id}:
+  /jobs/{id}:
     get:
-      tags: [job]
+      tags: [jobs]
       summary: Get a single job listing by ID
       parameters:
         - name: id
@@ -463,7 +465,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
     put:
-      tags: [job]
+      tags: [jobs]
       summary: Update an existing job listing (employer only — must own the listing)
       security:
         - bearerAuth: []
@@ -525,7 +527,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
     delete:
-      tags: [job]
+      tags: [jobs]
       summary: Delete a job listing (employer only — must own the listing)
       security:
         - bearerAuth: []
@@ -551,6 +553,249 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Unauthorized — missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /application:
+    get:
+      tags: [application]
+      summary: Get all applications for the authenticated user
+      description: >
+        Candidates receive their own applications; employers receive all applications
+        submitted to their job listings. Optionally filter by `status`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          description: Filter by application status
+          schema:
+            type: string
+            enum: [processing, accepted, declined, withdrawn]
+      responses:
+        '200':
+          description: List of applications
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Application'
+        '400':
+          description: Query error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized — missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Role not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags: [application]
+      summary: Submit a new job application (candidate only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [jobId]
+              properties:
+                jobId:
+                  type: string
+                  description: MongoDB ObjectId of the job to apply for
+                  pattern: '^[a-f\d]{24}$'
+                  example: 6651c2f0e3b4a12d88f00001
+                resume:
+                  type: string
+                  description: MongoDB ObjectId of the candidate's resume (optional)
+                  pattern: '^[a-f\d]{24}$'
+                  example: 6651c2f0e3b4a12d88f00002
+      responses:
+        '201':
+          description: Application submitted successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Application'
+        '400':
+          description: Validation error or job not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized — missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden — only candidates may submit applications
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /application/{id}:
+    get:
+      tags: [application]
+      summary: Get a single application by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Application ObjectId
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Application found
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Application'
+        '400':
+          description: Missing or invalid ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized — missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Role not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      tags: [application]
+      summary: Update an application status
+      description: >
+        **Candidates** may only withdraw their own application (no body required — the
+        status is set to `withdrawn` automatically).
+        **Employers** may set the status to `accepted` or `declined` by passing `newStatus`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Application ObjectId
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newStatus:
+                  type: string
+                  enum: [accepted, declined]
+                  description: Required when the caller is an employer.
+      responses:
+        '200':
+          description: Application updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Application'
+        '400':
+          description: Validation error or application not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized — missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Role not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags: [application]
+      summary: Delete an application (candidate only — must own the application)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Application ObjectId
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Application deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Error deleting application
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized — missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden — only candidates may delete applications
           content:
             application/json:
               schema:

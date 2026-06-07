@@ -70,7 +70,8 @@ async function isOwner(jobId, userId) {
 module.exports = {
     getAll,
     getOneById,
+    getMine,
     createNew,
     updateExisting,
-    deleteExistant
+    deleteExistant,
 }

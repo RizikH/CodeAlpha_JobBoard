@@ -17,7 +17,13 @@ const ApplicationSchema = new mongoose.Schema({
         enum: Object.values(APPLICATION_STATUS),
         default: 'processing',
         required: true
+    },
+    resume: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Resume',
+        required: false
     }
+
 }, {
     timestamps: true
 });

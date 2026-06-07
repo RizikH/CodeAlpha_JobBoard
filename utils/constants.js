@@ -9,7 +9,8 @@ const APPLICATION_STATUS = {
     PROCESSING: 'processing',
     ACCEPTED: 'accepted',
     DECLINED: 'declined',
-    WITHDRAWN: 'withdrawn'
+    WITHDRAWN: 'withdrawn',
+    DELETED: 'deleted'
 }
 
 const JOB_TYPE = {

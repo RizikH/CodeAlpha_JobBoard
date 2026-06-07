@@ -14,13 +14,15 @@ Generate an OpenAPI 3.0 spec from this project's Express routes and write it to 
 
 Read `config/swagger.js` (or `swagger.js` / `config/swagger.ts` if absent). Look for the `apis` array inside the `swagger-jsdoc` options — that array contains the file(s) swagger-jsdoc reads. Use the first `.yaml` or `.json` entry as the output path. If the swagger config cannot be found or has no `apis` entry pointing to a YAML/JSON file, default to `docs/openapi.yaml`.
 
+If the output file already exists, read it now. Use it as the baseline — preserve correct content and only change what is wrong or missing. Do not regenerate sections that are already accurate.
+
 ### 2 — Read app.js to find mount prefixes
 
-Read `app.js` (or `server.js` / `index.js` if absent). For every `app.use(path, router)` call, record the mount path (e.g. `'/api/auth'`, `'/api/job'`).
+Read `app.js` (or `server.js` / `index.js` if absent). For every `app.use(path, router)` call, record the mount path **exactly as written** — do not normalize plural/singular (e.g. `'/api/auth'`, `'/api/jobs'`).
 
 Find the **common prefix** shared by all mount paths (e.g. if all start with `/api`, the common prefix is `/api`). This becomes `servers[0].url`.
 
-For each router, the **spec path prefix** is the mount path **with the common prefix stripped** (e.g. mount `'/api/auth'` with common prefix `/api` → spec prefix `/auth`).
+For each router, the **spec path prefix** is the mount path **with the common prefix stripped** (e.g. mount `'/api/auth'` → spec prefix `/auth`; mount `'/api/jobs'` → spec prefix `/jobs`). Preserve the exact spelling, including plural forms.
 
 ### 3 — Read route files
 
@@ -92,7 +94,7 @@ paths:
 
 For each operation include:
 - `summary`: short label derived from the handler name or route purpose
-- `tags`: the route filename without extension (e.g. `auth`, `job`)
+- `tags`: the spec path prefix without the leading slash (e.g. spec prefix `/auth` → tag `auth`; spec prefix `/jobs` → tag `jobs`)
 - `security`: `[{bearerAuth: []}]` when the route uses `protect` middleware; omit otherwise
 - `requestBody`: for POST / PUT / PATCH — include all body fields with types and `required` list from the validator
 - `parameters`: path params (`in: path`) and query params (`in: query`) from the controller

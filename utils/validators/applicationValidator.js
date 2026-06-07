@@ -4,7 +4,8 @@ const { APPLICATION_STATUS } = require('../constants');
 
 // Validates that a new application references a valid MongoDB ObjectId for the job
 const validateCreateApplication = Joi.object({
-    job: Joi.string().pattern(/^[a-f\d]{24}$/i).message('Job ID must be a valid MongoDB ObjectId').required()
+    job: Joi.string().pattern(/^[a-f\d]{24}$/i).message('Job ID must be a valid MongoDB ObjectId').required(),
+    resume: Joi.string().pattern(/^[a-f\d]{24}$/i)
 });
 
 // Candidates may only withdraw their own application
