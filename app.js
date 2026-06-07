@@ -22,7 +22,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/jobs', require('./routes/job'));
-app.use('/api/application', require('./routes/application'));
+app.use('/api/applications', require('./routes/application'));
+app.use('/api/resumes', require('./routes/resume'));
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

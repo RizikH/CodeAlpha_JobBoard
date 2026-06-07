@@ -44,7 +44,7 @@ const uploadResume = async (userId, resumes) => {
     return await Resume.create(newResumes);
 }
 
-const deleteExistant = async (userId, resumeId) => {
+const deleteResume = async (userId, resumeId) => {
     const candidate = await Candidate.findOne({ user: userId });
 
     if (!candidate) {
@@ -68,5 +68,5 @@ module.exports = {
     getAll,
     getOneById,
     uploadResume,
-    deleteExistant
+    deleteResume
 }
