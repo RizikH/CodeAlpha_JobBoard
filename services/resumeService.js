@@ -53,7 +53,8 @@ const deleteExistant = async (userId, resumeId) => {
 
     const resume = await Resume.findOneAndUpdate(
         { _id: resumeId, candidate: candidate._id },
-        { status: RESUME_STATUS.DELETED }
+        { status: RESUME_STATUS.DELETED },
+        { new: true }
     );
 
     if (!resume) {
