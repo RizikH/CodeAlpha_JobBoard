@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { RESUME_STATUS } = require('../utils/constants');
 
 const ResumeSchema = new mongoose.Schema({
     fileName: {
@@ -9,9 +10,15 @@ const ResumeSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    user: {
+    candidate: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Candidate',
+        required: true
+    },
+    status: {
+        type: String,
+        enum: Object.values(RESUME_STATUS),
+        default: RESUME_STATUS.ACTIVE,
         required: true
     }
 }, {

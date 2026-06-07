@@ -27,9 +27,15 @@ const JOB_STATUS = {
     DELETED: 'deleted'
 }
 
+const RESUME_STATUS = {
+    ACTIVE: 'active',
+    DELETED: 'deleted'
+}
+
 module.exports = {
     ROLES,
     APPLICATION_STATUS,
     JOB_TYPE,
-    JOB_STATUS
+    JOB_STATUS,
+    RESUME_STATUS
 }

@@ -18,8 +18,7 @@ const getAll = async (req, res) => {
         if (userRole === ROLES.CANDIDATE) {
             const data = await service.getAllCandidate(userId, filters);
             return response.success(res, data, 200);
-        }
-        if (userRole === ROLES.EMPLOYER) {
+        } else if (userRole === ROLES.EMPLOYER) {
             const data = await service.getAllEmployer(userId, filters);
             return response.success(res, data, 200);
         } else {
@@ -44,8 +43,7 @@ const getOneById = async (req, res) => {
         if (userRole === ROLES.CANDIDATE) {
             const data = await service.getOneByIdCandidate(userId, applicationId);
             return response.success(res, data, 200);
-        }
-        if (userRole === ROLES.EMPLOYER) {
+        } else if (userRole === ROLES.EMPLOYER) {
             const data = await service.getOneByIdEmployer(userId, applicationId);
             return response.success(res, data, 200);
         } else {
