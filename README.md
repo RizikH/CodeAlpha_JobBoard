@@ -170,11 +170,12 @@ All endpoints return a consistent JSON shape:
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| POST | `/register` | — | Register a new user (`candidate` or `employer` role) |
+| POST | `/register` | — | Register a new user (`candidate`, `employer`, or `admin` role) |
 | POST | `/login` | — | Login and receive a JWT |
 
-Registration requires: `name`, `email`, `password` (min 8 chars, upper + lower + special), `phone` (`+[code] [number]`), `role`.  
-Employers also accept `company` and `location`.
+Registration requires: `name`, `email`, `password` (min 8 chars, upper + lower + special), `phone` (`+[code] [number]`), `role` (`candidate`, `employer`, or `admin`).  
+Employers also accept `company` and `location`.  
+Admin accounts are created through this same endpoint — no separate flow required.
 
 ---
 

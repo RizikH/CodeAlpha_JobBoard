@@ -39,6 +39,19 @@ describe('POST /api/auth/register', () => {
         expect(res.body.data.token).toBeDefined();
     });
 
+    it('registers an admin successfully', async () => {
+        const res = await request(app).post('/api/auth/register').send({
+            name: 'Site Admin',
+            email: 'admin@test.com',
+            password: 'Admin@1234!',
+            phone: '+1 5550000000',
+            role: 'admin',
+        });
+        expect(res.status).toBe(201);
+        expect(res.body.success).toBe(true);
+        expect(res.body.data.token).toBeDefined();
+    });
+
     it('returns 400 on duplicate email', async () => {
         await request(app).post('/api/auth/register').send(validCandidate);
         const res = await request(app).post('/api/auth/register').send(validCandidate);

@@ -1,7 +1,8 @@
 openapi: 3.0.3
 info:
-  title: CodeAlpha JobBoard
-  version: 1.0.0
+  title: JobBoard API
+  version: 1.0.1
+  description: REST API for a job board platform supporting candidates, employers, and admin management.
 
 servers:
   - url: /api
@@ -53,6 +54,9 @@ components:
           type: string
           enum: [active, banned]
           default: active
+        isDeleted:
+          type: boolean
+          default: false
         createdAt:
           type: string
           format: date-time
@@ -77,6 +81,9 @@ components:
           items:
             type: string
             description: ObjectId ref to Resume
+        isDeleted:
+          type: boolean
+          default: false
         createdAt:
           type: string
           format: date-time
@@ -100,6 +107,9 @@ components:
           type: string
         phone:
           type: string
+        isDeleted:
+          type: boolean
+          default: false
         createdAt:
           type: string
           format: date-time
@@ -132,8 +142,11 @@ components:
           type: number
         status:
           type: string
-          enum: [accepting, filled, canceled, deleted]
+          enum: [accepting, filled, canceled]
           default: accepting
+        isDeleted:
+          type: boolean
+          default: false
         createdAt:
           type: string
           format: date-time
@@ -157,8 +170,11 @@ components:
           description: ObjectId ref to Resume (optional)
         status:
           type: string
-          enum: [processing, accepted, declined, withdrawn, deleted]
+          enum: [processing, accepted, declined, withdrawn]
           default: processing
+        isDeleted:
+          type: boolean
+          default: false
         createdAt:
           type: string
           format: date-time
@@ -178,10 +194,9 @@ components:
         candidate:
           type: string
           description: ObjectId ref to Candidate
-        status:
-          type: string
-          enum: [active, deleted]
-          default: active
+        isDeleted:
+          type: boolean
+          default: false
         createdAt:
           type: string
           format: date-time
@@ -353,7 +368,7 @@ paths:
           in: query
           schema:
             type: string
-            enum: [accepting, filled, canceled, deleted]
+            enum: [accepting, filled, canceled]
         - name: title
           in: query
           description: Case-insensitive partial match on job title
@@ -460,8 +475,8 @@ paths:
                     properties:
                       data:
                         $ref: '#/components/schemas/Job'
-        '400':
-          description: Missing or invalid ID
+        '404':
+          description: Job not found
           content:
             application/json:
               schema:
@@ -1501,7 +1516,7 @@ paths:
           in: query
           schema:
             type: string
-            enum: [accepting, filled, canceled, deleted]
+            enum: [accepting, filled, canceled]
         - name: includeDeleted
           in: query
           schema:
@@ -1644,7 +1659,7 @@ paths:
           in: query
           schema:
             type: string
-            enum: [processing, accepted, declined, withdrawn, deleted]
+            enum: [processing, accepted, declined, withdrawn]
         - name: includeDeleted
           in: query
           schema:
