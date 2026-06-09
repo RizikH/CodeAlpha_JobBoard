@@ -1,6 +1,5 @@
 const Candidate = require('../models/Candidate');
 const Resume = require('../models/Resume');
-const { RESUME_STATUS } = require('../utils/constants');
 
 const getAll = async (userId) => {
     const candidate = await Candidate.findOne({ user: userId });
@@ -9,7 +8,7 @@ const getAll = async (userId) => {
         throw new Error("Server error occured: Candidate not found!");
     }
 
-    return await Resume.find({ candidate: candidate._id, status: { $ne: RESUME_STATUS.DELETED } });
+    return await Resume.find({ candidate: candidate._id });
 }
 
 const getOneById = async (userId, resumeId) => {
@@ -37,7 +36,7 @@ const uploadResume = async (userId, resumes) => {
 
     const newResumes = resumes.map(element => ({
         fileName: element.originalname,
-        filePath: element.path,
+        filePath: element.path || 'memory-storage',
         candidate: candidate._id
     }));
 
@@ -53,7 +52,7 @@ const deleteResume = async (userId, resumeId) => {
 
     const resume = await Resume.findOneAndUpdate(
         { _id: resumeId, candidate: candidate._id },
-        { status: RESUME_STATUS.DELETED },
+        { isDeleted: true },
         { new: true }
     );
 

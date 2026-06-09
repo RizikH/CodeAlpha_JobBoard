@@ -26,6 +26,7 @@ const JobSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+JobSchema.plugin(require('../utils/plugins/softDelete'));
 
 const Job = mongoose.model('Job', JobSchema);
 

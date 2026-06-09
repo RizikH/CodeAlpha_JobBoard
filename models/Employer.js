@@ -27,6 +27,9 @@ const employerSchema = new mongoose.Schema({
     timestamps: true
 });
 
+employerSchema.plugin(require('../utils/plugins/softDelete'));
+
+
 const Employer = mongoose.model('Employer', employerSchema);
 
 module.exports = Employer;  

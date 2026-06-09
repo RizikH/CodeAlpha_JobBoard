@@ -27,6 +27,7 @@ const getOneById = async (req, res) => {
 
     try {
         const data = await service.getOneById(id);
+        if (!data) return response.error(res, 'Job listing not found', 404);
         return response.success(res, data, 200);
     } catch (err) {
         return response.error(res, err.message, 400);

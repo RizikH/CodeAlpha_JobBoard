@@ -86,7 +86,8 @@ const updateExistingCandidate = async (userId, applicationId) => {
 
     const application = await Application.findOneAndUpdate(
         { _id: applicationId, candidate: candidate._id },
-        { status: APPLICATION_STATUS.WITHDRAWN }
+        { status: APPLICATION_STATUS.WITHDRAWN },
+        { new: true }
     );
 
     if (!application) {
@@ -108,7 +109,8 @@ const updateExistingEmployer = async (userId, applicationId, newStatus) => {
 
     const application = await Application.findOneAndUpdate(
         { _id: applicationId, job: { $in: jobIds } },
-        { status: newStatus }
+        { status: newStatus },
+        { new: true }
     );
 
     if (!application) {
@@ -127,7 +129,7 @@ const deleteExistantApplication = async (userId, applicationId) => {
 
     const application = await Application.findOneAndUpdate(
         { _id: applicationId, candidate: candidate._id },
-        { status: APPLICATION_STATUS.DELETED }
+        { isDeleted: true }
     );
 
     if (!application) {

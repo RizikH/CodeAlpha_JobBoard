@@ -1,3 +1,8 @@
+const USER_STATUS = {
+    ACTIVE: 'active',
+    BANNED: 'banned'
+}
+
 const ROLES = {
     EMPLOYER: 'employer',
     CANDIDATE: 'candidate',
@@ -9,8 +14,7 @@ const APPLICATION_STATUS = {
     PROCESSING: 'processing',
     ACCEPTED: 'accepted',
     DECLINED: 'declined',
-    WITHDRAWN: 'withdrawn',
-    DELETED: 'deleted'
+    WITHDRAWN: 'withdrawn'
 }
 
 const JOB_TYPE = {
@@ -24,15 +28,14 @@ const JOB_STATUS = {
     ACCEPTING: 'accepting',
     FILLED: 'filled',
     CANCELED: 'canceled',
-    DELETED: 'deleted'
 }
 
 const RESUME_STATUS = {
-    ACTIVE: 'active',
     DELETED: 'deleted'
 }
 
 module.exports = {
+    USER_STATUS,
     ROLES,
     APPLICATION_STATUS,
     JOB_TYPE,

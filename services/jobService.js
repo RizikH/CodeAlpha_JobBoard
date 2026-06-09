@@ -61,7 +61,7 @@ const deleteExistant = async (jobId, userId) => {
 
     const job = await Job.findOneAndUpdate(
         { _id: jobId, employer: employer._id },
-        { status: JOB_STATUS.DELETED }
+        { isDeleted: true }
     );
 
     if (!job) {

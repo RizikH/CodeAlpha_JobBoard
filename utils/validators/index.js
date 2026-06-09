@@ -1,12 +1,13 @@
-const { validateLogin, validateRegister } = require('./authValidator');
+const { validateLogin, validateRegister } = require('./authValidators');
 const { validateCreateJob, validateUpdateJob } = require('./jobValidators');
 const
     {
         validateCreateApplication,
         validateUpdateApplicationCandidate,
         validateUpdateApplicationEmployer
-    } = require('./applicationValidator');
+    } = require('./applicationValidators');
 
+const { validateUpdateUser } = require('./adminValidators');
 module.exports = {
     validateLogin,
     validateRegister,
@@ -14,5 +15,6 @@ module.exports = {
     validateUpdateJob,
     validateCreateApplication,
     validateUpdateApplicationCandidate,
-    validateUpdateApplicationEmployer
+    validateUpdateApplicationEmployer,
+    validateUpdateUser
 }

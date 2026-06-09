@@ -4,16 +4,29 @@ const { JOB_TYPE, JOB_STATUS } = require('../constants');
 
 // Schema for creating a new job listing
 const validateCreateJob = Joi.object({
-    title: Joi.string().required(),
-    description: Joi.string().required(),
-    skills: Joi.array().items(Joi.string()).required(),
-    location: Joi.string().required(),
+    title: Joi.string().required().messages({
+        'any.required': 'Title is required',
+        'string.empty': 'Title is required'
+    }),
+    description: Joi.string().required().messages({
+        'any.required': 'Description is required',
+        'string.empty': 'Description is required'
+    }),
+    skills: Joi.array().items(Joi.string()).required().messages({
+        'any.required': 'Skills are required'
+    }),
+    location: Joi.string().required().messages({
+        'any.required': 'Location is required',
+        'string.empty': 'Location is required'
+    }),
     jobType: Joi.string()
         .valid(...Object.values(JOB_TYPE))
+        .required()
         .messages({
-            'any.only': 'Job Type must be one of: full-time, part-time, contract, or internship'
-        })
-        .required(),
+            'any.required': 'Job type is required',
+            'string.empty': 'Job type is required',
+            'any.only': 'Job type must be one of: full-time, part-time, contract, or internship'
+        }),
     salary: Joi.number(),
 });
 

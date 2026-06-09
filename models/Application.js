@@ -23,10 +23,10 @@ const ApplicationSchema = new mongoose.Schema({
         ref: 'Resume',
         required: false
     }
-
 }, {
     timestamps: true
 });
+ApplicationSchema.plugin(require('../utils/plugins/softDelete'));
 
 const Application = mongoose.model('Application', ApplicationSchema);
 

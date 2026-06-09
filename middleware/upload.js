@@ -1,15 +1,17 @@
 // Multer middleware for resume file uploads (PDF/Word, max 5 MB, up to 10 files)
 const multer = require('multer');
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, './uploads');
-    },
-    // Prefix filename with timestamp to avoid collisions
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + '-' + file.originalname);
-    }
-});
+const storage = process.env.NODE_ENV === 'test'
+    ? multer.memoryStorage()
+    : multer.diskStorage({
+        destination: (req, file, cb) => {
+            cb(null, './uploads');
+        },
+        // Prefix filename with timestamp to avoid collisions
+        filename: (req, file, cb) => {
+            cb(null, Date.now() + '-' + file.originalname);
+        }
+    });
 
 // Reject files that are not PDF or Word documents
 const fileFilter = (req, file, cb) => {

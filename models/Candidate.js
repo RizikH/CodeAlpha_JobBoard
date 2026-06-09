@@ -25,6 +25,9 @@ const CandidateSchema = new mongoose.Schema({
     timestamps: true
 });
 
+CandidateSchema.plugin(require('../utils/plugins/softDelete'));
+
+
 const Candidate = mongoose.model('Candidate', CandidateSchema);
 
 module.exports = Candidate;

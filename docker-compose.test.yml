@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  mongo-test:
+    image: mongo:7.0
+    container_name: jobboard_mongo_test
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_DATABASE: jobboard_test
+    tmpfs:
+      - /data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5

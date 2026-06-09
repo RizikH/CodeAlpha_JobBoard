@@ -37,4 +37,9 @@ const limiters = {
     })
 };
 
-module.exports = limiters;
+if (process.env.NODE_ENV === 'test') {
+    const noop = (req, res, next) => next();
+    module.exports = { api: noop, auth: noop, downloads: noop };
+} else {
+    module.exports = limiters;
+}
