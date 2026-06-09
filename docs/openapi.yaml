@@ -246,6 +246,7 @@ paths:
                 role:
                   type: string
                   enum: [employer, candidate, admin]
+                  example: candidate
       responses:
         '201':
           description: Registration successful — returns a JWT token

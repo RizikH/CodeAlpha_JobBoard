@@ -10,7 +10,7 @@ const { ROLES } = require('../utils/constants');
 // Registers a new user and creates a role-specific profile, returns a signed JWT.
 const register = async (userData) => {
 
-    const existingUser = await User.findOne({ email: userData.email });
+    const existingUser = await User.findOne({ email: userData.email }).setOptions({ includeDeleted: true });
 
     if (existingUser) {
         throw new Error("User already exists");
