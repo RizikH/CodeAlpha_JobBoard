@@ -28,7 +28,7 @@ const getOneUserById = async (userId, includeDeleted) => {
 
 // Updates the status field of a user by ID.
 const updateUserById = async (userId, newStatus) => {
-    return await User.findByIdAndUpdate(userId, { status: newStatus }, { new: true });
+    return await User.findByIdAndUpdate(userId, { status: newStatus }, { returnDocument: 'after' });
 };
 
 
@@ -106,12 +106,12 @@ const getResumeById = async (resumeId) => {
 
 // Soft-deletes a user and cascades the deletion to their associated profile.
 const deleteUserById = async (userId) => {
-    const user = await User.findByIdAndUpdate(userId, { isDeleted: true }, { new: true }).select('_id role');
+    const user = await User.findByIdAndUpdate(userId, { isDeleted: true }, { returnDocument: 'after' }).select('_id role');
     if (!user) throw new Error("Server error occured: User not found!");
 
     if (user.role === ROLES.CANDIDATE) {
         const candidate = await Candidate.findOneAndUpdate(
-            { user: user._id }, { isDeleted: true }
+            { user: user._id }, { isDeleted: true }, { returnDocument: 'after' }
         ).select('_id');
         await Promise.all([
             Resume.updateMany({ candidate: candidate._id }, { isDeleted: true }),
@@ -119,7 +119,7 @@ const deleteUserById = async (userId) => {
         ]);
     } else if (user.role === ROLES.EMPLOYER) {
         const employer = await Employer.findOneAndUpdate(
-            { user: user._id }, { isDeleted: true }
+            { user: user._id }, { isDeleted: true }, { returnDocument: 'after' }
         ).select('_id');
         const jobIds = await Job.distinct('_id', { employer: employer._id });
         await Promise.all([
@@ -138,7 +138,7 @@ const deleteEmployerById = async (employerId) => {
         Application.updateMany({ job: { $in: jobIds } }, { isDeleted: true }),
         Job.updateMany({ _id: { $in: jobIds } }, { isDeleted: true }),
     ]);
-    return await Employer.findByIdAndUpdate(employerId, { isDeleted: true }, { new: true });
+    return await Employer.findByIdAndUpdate(employerId, { isDeleted: true }, { returnDocument: 'after' });
 };
 
 // Soft-deletes a candidate and cascades deletion to their resumes and applications.
@@ -147,26 +147,26 @@ const deleteCandidateById = async (candidateId) => {
         Resume.updateMany({ candidate: candidateId }, { isDeleted: true }),
         Application.updateMany({ candidate: candidateId }, { isDeleted: true }),
     ]);
-    return await Candidate.findByIdAndUpdate(candidateId, { isDeleted: true }, { new: true });
+    return await Candidate.findByIdAndUpdate(candidateId, { isDeleted: true }, { returnDocument: 'after' });
 };
 
 // Soft-deletes a job and cascades deletion to its applications.
 const deleteJobById = async (jobId) => {
     const [, job] = await Promise.all([
         Application.updateMany({ job: jobId }, { isDeleted: true }),
-        Job.findByIdAndUpdate(jobId, { isDeleted: true }, { new: true }),
+        Job.findByIdAndUpdate(jobId, { isDeleted: true }, { returnDocument: 'after' }),
     ]);
     return job;
 };
 
 // Soft-deletes an application by ID.
 const deleteApplicationById = async (applicationId) => {
-    return await Application.findByIdAndUpdate(applicationId, { isDeleted: true }, { new: true });
+    return await Application.findByIdAndUpdate(applicationId, { isDeleted: true }, { returnDocument: 'after' });
 };
 
 // Soft-deletes a resume by ID.
 const deleteResumeById = async (resumeId) => {
-    return Resume.findByIdAndUpdate(resumeId, { isDeleted: true }, { new: true });
+    return Resume.findByIdAndUpdate(resumeId, { isDeleted: true }, { returnDocument: 'after' });
 };
 
 

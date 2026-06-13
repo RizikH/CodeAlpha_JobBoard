@@ -53,7 +53,7 @@ const deleteResume = async (userId, resumeId) => {
     const resume = await Resume.findOneAndUpdate(
         { _id: resumeId, candidate: candidate._id },
         { isDeleted: true },
-        { new: true }
+        { returnDocument: 'after' }
     );
 
     if (!resume) {

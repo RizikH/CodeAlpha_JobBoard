@@ -6,7 +6,7 @@ const { validateCreateJob, validateUpdateJob } = require('../utils/validators')
 const getAll = async (req, res) => {
     const { location, jobType, status, title } = req.query;
     const filters = {};
-    if (location) filters.location = location;
+    if (location) filters.location = new RegExp(location, 'i');
     if (jobType) filters.jobType = jobType;
     if (status) filters.status = status;
     if (title) filters.title = new RegExp(title, 'i');

@@ -42,7 +42,7 @@ const updateExisting = async (jobId, userId, jobData) => {
     const job = await Job.findOneAndUpdate(
         { _id: jobId, employer: employer._id },
         jobData,
-        { new: true }
+        { returnDocument: 'after' }
     );
 
     if (!job) {
@@ -61,7 +61,8 @@ const deleteExistant = async (jobId, userId) => {
 
     const job = await Job.findOneAndUpdate(
         { _id: jobId, employer: employer._id },
-        { isDeleted: true }
+        { isDeleted: true },
+        { returnDocument: 'after' }
     );
 
     if (!job) {

@@ -70,8 +70,8 @@ const getAllCandidates = async (req, res) => {
     const includeDeleted = req.query.includeDeleted === 'true';
     const { name, phone } = req.query;
     const filters = {};
-    if (name) filters.name = name;
-    if (phone) filters.phone = phone;
+    if (name) filters.name = new RegExp(name, 'i');
+    if (phone) filters.phone = new RegExp(phone, 'i');
 
     try {
         const data = await service.getAllCandidates(filters, includeDeleted);
@@ -113,10 +113,10 @@ const getAllEmployers = async (req, res) => {
     const { name, company, location, phone } = req.query;
     const filters = {};
 
-    if (name) filters.name = name;
-    if (company) filters.company = company;
-    if (location) filters.location = location;
-    if (phone) filters.phone = phone;
+    if (name) filters.name = new RegExp(name, 'i');
+    if (company) filters.company = new RegExp(company, 'i');
+    if (location) filters.location = new RegExp(location, 'i');
+    if (phone) filters.phone = new RegExp(phone, 'i');
 
     try {
         const data = await service.getAllEmployers(filters, includeDeleted);
@@ -159,11 +159,11 @@ const getAllJobs = async (req, res) => {
     const { title, employer, description, skills, location, jobType, salary, status } = req.query;
     const filters = {};
 
-    if (title) filters.title = title;
+    if (title) filters.title = new RegExp(title, 'i');
     if (employer) filters.employer = employer;
-    if (description) filters.description = description;
-    if (skills) filters.skills = skills;
-    if (location) filters.location = location;
+    if (description) filters.description = new RegExp(description, 'i');
+    if (skills) filters.skills = new RegExp(skills, 'i');
+    if (location) filters.location = new RegExp(location, 'i');
     if (jobType) filters.jobType = jobType;
     if (salary) filters.salary = salary;
     if (status) filters.status = status;
@@ -253,7 +253,7 @@ const getAllResumes = async (req, res) => {
 
     const { fileName, candidate } = req.query;
     const filters = {};
-    if (fileName) filters.fileName = fileName;
+    if (fileName) filters.fileName = new RegExp(fileName, 'i');
     if (candidate) filters.candidate = candidate;
 
     try {
